@@ -105,7 +105,6 @@ public class BoardManager : MonoBehaviour
         GameObject toInstantiate;
         GameObject instance;
 
-
         char[] level = RotateLevel(levelString.ToCharArray());
         int dimension = Convert.ToInt32(Math.Sqrt(level.Length));
 
@@ -113,20 +112,33 @@ public class BoardManager : MonoBehaviour
         {
             switch (level[i])
             {
-                case 'F':
-                    toInstantiate = floorTiles[Random.Range(0, floorTiles.Length)];
-                    break;
                 case 'X':
                     toInstantiate = outerWallTiles[Random.Range(0, outerWallTiles.Length)];
                     break;
                 default:
-                    toInstantiate = outerWallTiles[Random.Range(0, outerWallTiles.Length)];
+                    toInstantiate = floorTiles[Random.Range(0, floorTiles.Length)];
                     break;
             }
-            instance = Instantiate(toInstantiate, new Vector3(i % dimension, Convert.ToInt32(Math.Floor((double) (i / dimension))), 0f), Quaternion.identity) as GameObject;
+            instance = Instantiate(toInstantiate, new Vector3(i % dimension - 1, Convert.ToInt32(Math.Floor((double) (i / dimension))) - 1, 0f), Quaternion.identity) as GameObject;
+            instance.transform.SetParent(boardHolder);
+            switch (level[i])
+            {
+                case 'D':
+                    toInstantiate = exit;
+                    break;
+                case 'W':
+                    toInstantiate = wallTiles[Random.Range(0, wallTiles.Length)];
+                    break;
+                case 'E':
+                    toInstantiate = enemyTiles[Random.Range(0, enemyTiles.Length)];
+                    break;
+                case 'F':
+                    toInstantiate = foodTiles[Random.Range(0, foodTiles.Length)];
+                    break;
+            }
+            instance = Instantiate(toInstantiate, new Vector3(i % dimension - 1, Convert.ToInt32(Math.Floor((double)(i / dimension))) - 1, 0f), Quaternion.identity) as GameObject;
             instance.transform.SetParent(boardHolder);
         }
-
     }
 
     //RandomPosition returns a random position from our list gridPositions.
@@ -170,21 +182,49 @@ public class BoardManager : MonoBehaviour
     //SetupScene initializes our level and calls the previous functions to lay out the game board
     public void SetupScene(int level)
     {
-        String levelString = "XXFXXXXX" +
-                             "XFXXXXXX" +
-                             "FFXXXXXX" +
-                             "XFXXXXXX" +
-                             "XFFXXXXX" +
-                             "XFXXXXXX" +
-                             "XFXXXXXX" +
-                             "FFXXXXXX";
+#if UNITY_ANDROID
 
+        Debug.Log("Estoy en Android");
+
+        try
+        {
+            //AndroidJavaClass javaClass = new AndroidJavaClass("edu.upc.dsa.rogueapp.Mapa");
+            AndroidJavaObject javaObject = new AndroidJavaObject("edu.upc.dsa.rogueapp.Mapa");
+            Debug.Log("La clase es: ");
+            Debug.Log(javaObject.ToString());
+            String res = javaObject.CallStatic<String>("loadMap", new object[] { 1 });
+            Debug.Log("El string es: ");
+            Debug.Log(res);
+            BoardSetupFromString(res);
+
+        }
+        catch (Exception ex)
+        {
+            Debug.Log("Error de Unity OBJECT");
+            Debug.Log(ex);
+        }
+
+
+#else
         //Creates the outer walls and floor.
         //BoardSetup();
+
+        String levelString = "XXXXXXXXXX" +
+                             "X   W   FX" +
+                             "X   W    X" +
+                             "X   W    X" +
+                             "X   WWWWWX" +
+                             "X        X" +
+                             "X   F    X" +
+                             "X        X" +
+                             "X   D   EX" +
+                             "XXXXXXXXXX";
+
         BoardSetupFromString(levelString);
 
+
         //Reset our list of gridpositions.
-        InitialiseList();
+        //InitialiseList();
 
         //Instantiate a random number of wall tiles based on minimum and maximum, at randomized positions.
         //LayoutObjectAtRandom(wallTiles, wallCount.minimum, wallCount.maximum);
@@ -199,6 +239,7 @@ public class BoardManager : MonoBehaviour
         //LayoutObjectAtRandom(enemyTiles, enemyCount, enemyCount);
 
         //Instantiate the exit tile in the upper right hand corner of our game board
-        Instantiate(exit, new Vector3(columns - 1, rows - 1, 0f), Quaternion.identity);
+        //Instantiate(exit, new Vector3(columns - 1, rows - 1, 0f), Quaternion.identity);
+#endif
     }
 }

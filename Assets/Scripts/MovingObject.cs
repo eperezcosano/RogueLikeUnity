@@ -111,8 +111,11 @@ public abstract class MovingObject : MonoBehaviour
             //Call the OnCantMove function and pass it hitComponent as a parameter.
             OnCantMove(hitComponent);
 
-        if (!canMove && hitComponent == null) //Wall
-            Move(yDir, xDir, out hit);
+        else if (!canMove && hitComponent == null && this is Enemy) //Wall
+        {
+            Move(-yDir, -xDir, out hit);
+        }
+
     }
 
 
