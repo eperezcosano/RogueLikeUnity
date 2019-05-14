@@ -184,23 +184,17 @@ public class BoardManager : MonoBehaviour
     {
 #if UNITY_ANDROID
 
-        Debug.Log("Estoy en Android");
-
         try
         {
-            //AndroidJavaClass javaClass = new AndroidJavaClass("edu.upc.dsa.rogueapp.Mapa");
-            AndroidJavaObject javaObject = new AndroidJavaObject("edu.upc.dsa.rogueapp.Mapa");
-            Debug.Log("La clase es: ");
-            Debug.Log(javaObject.ToString());
-            String res = javaObject.CallStatic<String>("loadMap", new object[] { 1 });
+            AndroidJavaClass javaClass = new AndroidJavaClass("edu.upc.dsa.rogueapp.Mapa");
+            String res = javaClass.CallStatic<String>("loadMap", level);
             Debug.Log("El string es: ");
             Debug.Log(res);
             BoardSetupFromString(res);
-
         }
         catch (Exception ex)
         {
-            Debug.Log("Error de Unity OBJECT");
+            Debug.Log("Error de Unity, no se puede llamar el metodo");
             Debug.Log(ex);
         }
 
